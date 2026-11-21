@@ -53,7 +53,7 @@ export default async function ProjectLayout({
       <main className="min-w-0 flex-1 p-4 sm:p-8">
         {project.showcase && (
           <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
-            <b>Demo data.</b> This is a pre-generated analysis of {project.strategy.companyName}, produced by the Pulsora pipeline. Agent runs replay prepared drafts.
+            <b>Demo data.</b> This is a pre-generated analysis of {project.strategy.companyName}, prepared in advance for this demo. Agent runs replay prepared drafts.
           </div>
         )}
         {children}

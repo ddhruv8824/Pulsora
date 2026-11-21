@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Draft, DraftStatus } from "@/lib/types";
+import { Markdown } from "./Markdown";
 
 const STATUS_STYLE: Record<DraftStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -64,9 +65,14 @@ export function DraftCard({ draft }: { draft: Draft }) {
         <textarea className="input min-h-64 font-mono text-sm" value={body} onChange={(e) => setBody(e.target.value)} />
       ) : (
         <div className="relative">
-          <pre className={`whitespace-pre-wrap break-words font-sans text-sm leading-relaxed ${!expanded && long ? "max-h-56 overflow-hidden" : ""}`}>
-            {draft.body}
-          </pre>
+          <div className={`break-words ${!expanded && long ? "max-h-56 overflow-hidden" : ""}`}>
+            {/* Articles and FAQ pages render as formatted text; files (llms.txt, schema) stay raw for copying. */}
+            {draft.channel === "Blog" || draft.channel === "Website (FAQ)" ? (
+              <Markdown source={draft.body} />
+            ) : (
+              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{draft.body}</pre>
+            )}
+          </div>
           {long && (
             <button className="mt-1 text-xs font-semibold text-brand-600" onClick={() => setExpanded(!expanded)}>
               {expanded ? "Show less" : "Show more"}
