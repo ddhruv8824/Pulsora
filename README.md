@@ -29,6 +29,13 @@ npm run dev                  # http://localhost:3000
 Without an API key the app runs in **demo mode**: the crawl and audit checks are real,
 while the strategy and drafts are sample output, so you can click through everything for free.
 
+## Deploy on Render
+
+1. Render dashboard → **New → Blueprint** → pick this repo. `render.yaml` creates a
+   Node web service (Starter plan) with a 1 GB disk at `/var/data` for the data file.
+2. When asked, fill in `ANTHROPIC_API_KEY` and `DEMO_PASSWORD` (investors must enter it).
+3. Deploy. Every push to `main` redeploys automatically.
+
 ## Tech
 
 - Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4

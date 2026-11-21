@@ -5,13 +5,14 @@ import { BlobError, BlobPreconditionFailedError, get, put } from "@vercel/blob";
 import type { AgentRun, DB, Draft, Project } from "./types";
 
 // Storage: one JSON document holding every project, draft and run.
-// - Locally it lives in data/pulsora.json.
+// - Locally / on Render it lives in $DATA_DIR/pulsora.json (default ./data).
 // - Online (Vercel) it lives in a private Vercel Blob, because serverless
 //   instances have no shared disk. Reads bypass the CDN cache and writes are
 //   conditional on the ETag, so concurrent updates retry instead of clobbering.
 // Swap this module for Postgres when moving beyond the MVP.
 
-const DB_PATH = path.join(process.cwd(), "data", "pulsora.json");
+// DATA_DIR points at a persistent disk in production (e.g. Render: /var/data).
+const DB_PATH = path.join(process.env.DATA_DIR || path.join(process.cwd(), "data"), "pulsora.json");
 const BLOB_PATH = "pulsora/db.json";
 const EMPTY: DB = { projects: [], drafts: [], runs: [] };
 

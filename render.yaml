@@ -1,0 +1,24 @@
+# Render Blueprint: New → Blueprint → select this repo.
+# One Node web service with a small persistent disk for the JSON database.
+services:
+  - type: web
+    name: pulsora
+    runtime: node
+    plan: starter            # always on; the free plan sleeps and has no disk
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /login
+    disk:
+      name: pulsora-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR
+        value: /var/data
+      - key: ANTHROPIC_API_KEY
+        sync: false          # you paste it in the Render dashboard
+      - key: DEMO_PASSWORD
+        sync: false          # the password you share with investors
