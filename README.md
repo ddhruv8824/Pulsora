@@ -29,11 +29,23 @@ npm run dev                  # http://localhost:3000
 Without an API key the app runs in **demo mode**: the crawl and audit checks are real,
 while the strategy and drafts are sample output, so you can click through everything for free.
 
+## Investor demo (showcase mode)
+
+Generate the demo data once with the real pipeline, then serve it without live AI calls:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... npm run showcase -- https://company.com   # writes seed/showcase.json
+PULSORA_SHOWCASE=1 npm run dev
+```
+
+With `PULSORA_SHOWCASE=1`, entering any website plays the analysis steps (~15 s) and opens the
+pre-generated company, clearly labelled as demo data. "Run agent" hands out prepared drafts.
+
 ## Deploy on Render
 
-1. Render dashboard → **New → Blueprint** → pick this repo. `render.yaml` creates a
-   Node web service (Starter plan) with a 1 GB disk at `/var/data` for the data file.
-2. When asked, fill in `ANTHROPIC_API_KEY` and `DEMO_PASSWORD` (investors must enter it).
+1. Render dashboard → **New → Blueprint** → pick this repo. `render.yaml` creates a free
+   Node web service in showcase mode (no API key or disk needed; see the file for the paid setup).
+2. When asked, fill in `DEMO_PASSWORD` (investors must enter it).
 3. Deploy. Every push to `main` redeploys automatically.
 
 ## Tech

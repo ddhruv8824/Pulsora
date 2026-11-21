@@ -4,12 +4,13 @@ import { OnboardForm } from "@/components/OnboardForm";
 import { AGENT_META } from "@/lib/agents";
 import { listProjects } from "@/lib/db";
 import { isDemoMode } from "@/lib/llm";
+import { isShowcase } from "@/lib/showcase";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const projects = await listProjects();
-  const demo = isDemoMode();
+  const demo = isDemoMode() && !isShowcase();
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">

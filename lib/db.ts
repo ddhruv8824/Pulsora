@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import { BlobError, BlobPreconditionFailedError, get, put } from "@vercel/blob";
+import { initialDb } from "./showcase";
 import type { AgentRun, DB, Draft, Project } from "./types";
 
 // Storage: one JSON document holding every project, draft and run.
@@ -14,7 +15,6 @@ import type { AgentRun, DB, Draft, Project } from "./types";
 // DATA_DIR points at a persistent disk in production (e.g. Render: /var/data).
 const DB_PATH = path.join(process.env.DATA_DIR || path.join(process.cwd(), "data"), "pulsora.json");
 const BLOB_PATH = "pulsora/db.json";
-const EMPTY: DB = { projects: [], drafts: [], runs: [] };
 
 type Snapshot = { db: DB; etag?: string };
 
@@ -23,13 +23,13 @@ const useBlob = () => !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_S
 async function readSnapshot(): Promise<Snapshot> {
   if (useBlob()) {
     const res = await get(BLOB_PATH, { access: "private", useCache: false });
-    if (!res || res.statusCode !== 200) return { db: structuredClone(EMPTY) };
+    if (!res || res.statusCode !== 200) return { db: await initialDb() };
     return { db: JSON.parse(await new Response(res.stream).text()) as DB, etag: res.blob.etag };
   }
   try {
     return { db: JSON.parse(await fs.readFile(DB_PATH, "utf8")) as DB };
   } catch {
-    return { db: structuredClone(EMPTY) };
+    return { db: await initialDb() };
   }
 }
 

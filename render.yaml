@@ -1,24 +1,26 @@
 # Render Blueprint: New → Blueprint → select this repo.
-# One Node web service with a small persistent disk for the JSON database.
+#
+# Free plan, investor-demo ("showcase") mode: the app serves the pre-generated
+# analysis in seed/showcase.json, so it needs no API key and no disk, and the
+# demo survives the free plan's sleep/restart cycles.
+#
+# For live AI analysis later: set plan to starter, add the disk below, set
+# PULSORA_SHOWCASE to "0" and add ANTHROPIC_API_KEY.
+#    disk: { name: pulsora-data, mountPath: /var/data, sizeGB: 1 }
+#    env:  DATA_DIR=/var/data
 services:
   - type: web
     name: pulsora
     runtime: node
-    plan: starter            # always on; the free plan sleeps and has no disk
+    plan: free
     region: singapore
     buildCommand: npm ci && npm run build
     startCommand: npm run start
     healthCheckPath: /login
-    disk:
-      name: pulsora-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "22"
-      - key: DATA_DIR
-        value: /var/data
-      - key: ANTHROPIC_API_KEY
-        sync: false          # you paste it in the Render dashboard
+      - key: PULSORA_SHOWCASE
+        value: "1"
       - key: DEMO_PASSWORD
         sync: false          # the password you share with investors

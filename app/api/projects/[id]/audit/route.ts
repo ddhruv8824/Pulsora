@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isShowcase, sleep } from "@/lib/showcase";
 import { fetchText } from "@/lib/crawl";
 import { addRun, getProject, updateProject } from "@/lib/db";
 import { describeError, isDemoMode } from "@/lib/llm";
@@ -10,6 +11,11 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const { id } = await ctx.params;
   const project = await getProject(id);
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  if (isShowcase() && project.showcase) {
+    await sleep(4000);
+    await addRun({ projectId: id, agent: "seo", status: "success", message: `Website audit score ${project.audit?.score ?? "—"}/100.`, draftCount: 0, demo: false });
+    return NextResponse.json({ ok: true, score: project.audit?.score });
+  }
   try {
     const page = await fetchText(project.url);
     if (!page.ok) throw new Error(`Could not load ${project.url}`);

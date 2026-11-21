@@ -128,6 +128,8 @@ export type Project = {
   documents?: StrategyDocs;
   audit?: Audit;
   demo: boolean;
+  /** Pre-generated showcase project (investor demo). */
+  showcase?: boolean;
 };
 
 export type DB = {

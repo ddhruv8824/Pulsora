@@ -46,11 +46,18 @@ export default async function ProjectLayout({
           ))}
         </nav>
         <div className="mt-6 hidden md:block">
-          {isDemoMode() && <p className="mb-3 text-xs muted">Demo mode: set ANTHROPIC_API_KEY for real AI output.</p>}
-          <DeleteProjectButton id={id} />
+          {isDemoMode() && !project.showcase && <p className="mb-3 text-xs muted">Demo mode: set ANTHROPIC_API_KEY for real AI output.</p>}
+          {!project.showcase && <DeleteProjectButton id={id} />}
         </div>
       </aside>
-      <main className="min-w-0 flex-1 p-4 sm:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 sm:p-8">
+        {project.showcase && (
+          <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
+            <b>Demo data.</b> This is a pre-generated analysis of {project.strategy.companyName}, produced by the Pulsora pipeline. Agent runs replay prepared drafts.
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

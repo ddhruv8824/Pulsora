@@ -5,6 +5,7 @@ import { describeError, isDemoMode } from "@/lib/llm";
 import { buildAudit } from "@/lib/seo";
 import { buildStrategy } from "@/lib/strategy";
 import { buildDocuments } from "@/lib/documents";
+import { isShowcase, loadSeed } from "@/lib/showcase";
 
 export const maxDuration = 300;
 
@@ -16,6 +17,13 @@ export async function GET() {
 export async function POST(req: Request) {
   const { url, notes } = (await req.json().catch(() => ({}))) as { url?: string; notes?: string };
   if (!url?.trim()) return NextResponse.json({ error: "Please enter your website URL." }, { status: 400 });
+
+  // Investor demo: hand back the pre-generated analysis; the client plays the progress steps.
+  if (isShowcase()) {
+    const seed = await loadSeed();
+    if (!seed) return NextResponse.json({ error: "Demo data is not set up yet (seed/showcase.json missing)." }, { status: 500 });
+    return NextResponse.json({ id: seed.project.id, showcase: true, company: seed.project.strategy.companyName });
+  }
 
   try {
     const { site, homepageHtml } = await crawlSite(url);
