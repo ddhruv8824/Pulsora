@@ -1,40 +1,82 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
+import { BlobError, BlobPreconditionFailedError, get, put } from "@vercel/blob";
 import type { AgentRun, DB, Draft, Project } from "./types";
 
-// MVP storage: a single JSON file. Swap this module for Postgres (e.g. Supabase)
-// when moving beyond the MVP — the rest of the app only uses these functions.
+// Storage: one JSON document holding every project, draft and run.
+// - Locally it lives in data/pulsora.json.
+// - Online (Vercel) it lives in a private Vercel Blob, because serverless
+//   instances have no shared disk. Reads bypass the CDN cache and writes are
+//   conditional on the ETag, so concurrent updates retry instead of clobbering.
+// Swap this module for Postgres when moving beyond the MVP.
 
 const DB_PATH = path.join(process.cwd(), "data", "pulsora.json");
+const BLOB_PATH = "pulsora/db.json";
+const EMPTY: DB = { projects: [], drafts: [], runs: [] };
 
-// Route handlers and server components can run in separate module instances, so we
-// never trust an in-memory copy: every read hits the file, and every write is a
-// serialized read-modify-write.
-let lock: Promise<unknown> = Promise.resolve();
+type Snapshot = { db: DB; etag?: string };
 
-async function readDb(): Promise<DB> {
+const useBlob = () => !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+
+async function readSnapshot(): Promise<Snapshot> {
+  if (useBlob()) {
+    const res = await get(BLOB_PATH, { access: "private", useCache: false });
+    if (!res || res.statusCode !== 200) return { db: structuredClone(EMPTY) };
+    return { db: JSON.parse(await new Response(res.stream).text()) as DB, etag: res.blob.etag };
+  }
   try {
-    return JSON.parse(await fs.readFile(DB_PATH, "utf8")) as DB;
+    return { db: JSON.parse(await fs.readFile(DB_PATH, "utf8")) as DB };
   } catch {
-    return { projects: [], drafts: [], runs: [] };
+    return { db: structuredClone(EMPTY) };
   }
 }
 
-async function load(): Promise<DB> {
-  return readDb();
+/** Returns false when someone else wrote first (caller re-reads and retries). */
+async function writeSnapshot(db: DB, etag?: string): Promise<boolean> {
+  const body = JSON.stringify(db, null, 2);
+  if (useBlob()) {
+    try {
+      await put(BLOB_PATH, body, {
+        access: "private",
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: !!etag,
+        ...(etag && { ifMatch: etag }),
+        cacheControlMaxAge: 60,
+      });
+      return true;
+    } catch (err) {
+      if (err instanceof BlobPreconditionFailedError) return false;
+      // First write races another first write: the blob now exists, so retry as an update.
+      if (!etag && err instanceof BlobError) return false;
+      throw err;
+    }
+  }
+  await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+  const tmp = `${DB_PATH}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, body);
+  await fs.rename(tmp, DB_PATH);
+  return true;
 }
 
-/** Run `fn` against a fresh copy of the DB and persist the result atomically. */
+async function load(): Promise<DB> {
+  return (await readSnapshot()).db;
+}
+
+// Serializes writes inside one process; ETags handle writes across instances.
+let lock: Promise<unknown> = Promise.resolve();
+
+/** Run `fn` against a fresh copy of the DB and persist the result. */
 function mutate<T>(fn: (db: DB) => T): Promise<T> {
   const next = lock.then(async () => {
-    const db = await readDb();
-    const result = fn(db);
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-    const tmp = `${DB_PATH}.${process.pid}.tmp`;
-    await fs.writeFile(tmp, JSON.stringify(db, null, 2));
-    await fs.rename(tmp, DB_PATH);
-    return result;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { db, etag } = await readSnapshot();
+      const result = fn(db);
+      if (await writeSnapshot(db, etag)) return result;
+      await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+    }
+    throw new Error("Could not save changes because of concurrent updates. Please retry.");
   });
   lock = next.catch(() => undefined);
   return next;
