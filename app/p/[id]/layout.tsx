@@ -21,6 +21,7 @@ export default async function ProjectLayout({
 
   const nav = [
     { href: `/p/${id}`, label: "Overview" },
+    { href: `/p/${id}/documents`, label: "Documents" },
     { href: `/p/${id}/agents`, label: "Agents" },
     { href: `/p/${id}/queue`, label: "Approval queue", badge: pending },
     { href: `/p/${id}/audit`, label: "Website audit" },
@@ -29,16 +30,16 @@ export default async function ProjectLayout({
 
   return (
     <div className="min-h-screen md:flex">
-      <aside className="border-app border-b p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:border-r">
+      <aside className="border-app border-b p-4 md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:border-r bg-white">
         <Logo />
         <div className="mt-6 hidden md:block">
-          <div className="text-xs uppercase tracking-wide muted">Company</div>
+          <div className="label">Company</div>
           <div className="mt-1 font-semibold">{project.strategy.companyName}</div>
           <a href={project.url} target="_blank" rel="noreferrer" className="block truncate text-xs muted underline">{project.url}</a>
         </div>
         <nav className="mt-4 flex gap-1 overflow-x-auto md:mt-6 md:flex-col">
           {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="flex items-center justify-between whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-50 dark:hover:bg-brand-500/10">
+            <Link key={n.href} href={n.href} className="flex items-center justify-between whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
               {n.label}
               {!!n.badge && <span className="ml-2 rounded-full bg-brand-600 px-2 text-xs text-white">{n.badge}</span>}
             </Link>

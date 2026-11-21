@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RunAgentButton } from "@/components/RunAgentButton";
 import { AGENT_META } from "@/lib/agents";
+import { DOC_KEYS, DOC_META } from "@/lib/types";
 import { getProject, listDrafts, listRuns } from "@/lib/db";
 
 const PRIORITY = { high: "text-emerald-600", medium: "text-amber-600", low: "muted" } as const;
@@ -22,7 +23,7 @@ export default async function Overview({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Good to see you 👋</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back 👋</h1>
         <p className="muted">{s.oneLiner}</p>
       </header>
 
@@ -37,8 +38,30 @@ export default async function Overview({ params }: { params: Promise<{ id: strin
 
       <section className="panel p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">Quick actions</h2>
-          <Link href={`/p/${id}/agents`} className="text-sm text-brand-600">All agents →</Link>
+          <div>
+            <div className="label">Step 1 — Research</div>
+            <h2 className="font-semibold">Strategy documents</h2>
+          </div>
+          <Link href={`/p/${id}/documents`} className="text-sm underline">Open →</Link>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {DOC_KEYS.map((k) => (
+            <Link key={k} href={`/p/${id}/documents?doc=${k}`} className="rounded-lg border border-app p-3 hover:border-black">
+              <div className="text-sm font-medium">{DOC_META[k].title}</div>
+              <div className="font-mono text-[11px] muted">{DOC_META[k].file}</div>
+              <div className={`mt-2 text-xs ${project.documents ? "text-emerald-600" : "muted"}`}>{project.documents ? "● Ready" : "○ Not written"}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <div className="label">Step 2 — Execution</div>
+            <h2 className="font-semibold">Quick actions</h2>
+          </div>
+          <Link href={`/p/${id}/agents`} className="text-sm underline">All agents →</Link>
         </div>
         <div className="flex flex-wrap gap-3">
           {(["content", "linkedin", "reddit", "geo"] as const).map((a) => (
@@ -82,7 +105,7 @@ export default async function Overview({ params }: { params: Promise<{ id: strin
             {runs.slice(0, 12).map((r) => (
               <li key={r.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
                 <span className={r.status === "success" ? "text-emerald-600" : "text-red-500"}>{r.status === "success" ? "●" : "✕"}</span>
-                <span className="font-medium capitalize">{r.agent in AGENT_META ? AGENT_META[r.agent as keyof typeof AGENT_META].name : r.agent}</span>
+                <span className="font-medium capitalize">{r.agent in AGENT_META ? AGENT_META[r.agent as keyof typeof AGENT_META].name : r.agent === "documents" ? "Strategy documents" : r.agent === "seo" ? "Website audit" : r.agent}</span>
                 <span className="muted">{r.message}</span>
                 {r.demo && <span className="chip">demo</span>}
                 <span className="ml-auto text-xs muted">{new Date(r.createdAt).toLocaleString()}</span>

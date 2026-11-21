@@ -5,10 +5,10 @@ import { useState } from "react";
 import type { Draft, DraftStatus } from "@/lib/types";
 
 const STATUS_STYLE: Record<DraftStatus, string> = {
-  pending: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
-  approved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
-  rejected: "bg-zinc-200 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-300",
-  posted: "bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100",
+  pending: "bg-amber-100 text-amber-800",
+  approved: "bg-emerald-100 text-emerald-800",
+  rejected: "bg-zinc-200 text-zinc-700",
+  posted: "bg-brand-100 text-brand-700",
 };
 
 export function DraftCard({ draft }: { draft: Draft }) {

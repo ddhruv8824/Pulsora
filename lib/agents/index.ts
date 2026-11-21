@@ -36,7 +36,11 @@ Competitors: ${s.competitors.join(", ")}
 Brand voice: ${s.brandVoice}
 Keywords: ${s.keywords.join(", ")}
 Content pillars: ${s.contentPillars.join(", ")}
-</company>`;
+</company>${
+    p.documents
+      ? `\n\n<brand-voice>\n${p.documents.brandVoice}\n</brand-voice>\n\n<content-strategy>\n${p.documents.content}\n</content-strategy>\n\n<competitor-analysis>\n${p.documents.competitors}\n</competitor-analysis>`
+      : ""
+  }`;
 }
 
 const PostsSchema = z.object({

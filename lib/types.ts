@@ -89,7 +89,7 @@ export type Draft = {
 export type AgentRun = {
   id: string;
   projectId: string;
-  agent: AgentId | "strategy" | "seo";
+  agent: AgentId | "strategy" | "seo" | "documents";
   status: "success" | "error";
   message: string;
   draftCount: number;
@@ -97,12 +97,35 @@ export type AgentRun = {
   createdAt: string;
 };
 
+// ---------- Strategy documents (the "handoff" every agent reads) ----------
+
+export const DOC_KEYS = ["product", "marketing", "competitors", "brandVoice", "content"] as const;
+export type DocKey = (typeof DOC_KEYS)[number];
+
+export const DOC_META: Record<DocKey, { title: string; file: string; blurb: string }> = {
+  product: { title: "Product Information", file: "product-information.md", blurb: "What you sell, to whom, and why it wins" },
+  marketing: { title: "Marketing Strategy", file: "marketing-strategy.md", blurb: "Positioning, personas, channels and goals" },
+  competitors: { title: "Competitor Analysis", file: "competitor-analysis.md", blurb: "Who else they consider, and how you beat them" },
+  brandVoice: { title: "Brand Voice", file: "brand-voice.md", blurb: "How you sound, with do's and don'ts" },
+  content: { title: "Content Strategy", file: "content-strategy.md", blurb: "Pillars, topics, formats and cadence" },
+};
+
+export const DocumentsSchema = z.object({
+  product: z.string().describe("Markdown: product-information.md"),
+  marketing: z.string().describe("Markdown: marketing-strategy.md"),
+  competitors: z.string().describe("Markdown: competitor-analysis.md"),
+  brandVoice: z.string().describe("Markdown: brand-voice.md"),
+  content: z.string().describe("Markdown: content-strategy.md"),
+});
+export type StrategyDocs = z.infer<typeof DocumentsSchema>;
+
 export type Project = {
   id: string;
   url: string;
   createdAt: string;
   site: SiteSnapshot;
   strategy: Strategy;
+  documents?: StrategyDocs;
   audit?: Audit;
   demo: boolean;
 };

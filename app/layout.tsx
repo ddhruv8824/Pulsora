@@ -3,12 +3,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Pulsora — your AI CMO",
-  description: "Pulsora analyses your website, builds a marketing strategy, and runs AI agents for SEO, GEO, content, X, LinkedIn, Reddit and Hacker News.",
+  description: "Pulsora analyses your website, writes your strategy documents, and runs AI agents for SEO, GEO, content, X, LinkedIn, Reddit and Hacker News.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+      </head>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   );

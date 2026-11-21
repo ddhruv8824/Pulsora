@@ -28,7 +28,7 @@ export default async function Agents({ params }: { params: Promise<{ id: string 
           return (
             <div key={a.id} className="panel flex flex-col p-5">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-lg font-bold text-brand-700 dark:bg-brand-500/15 dark:text-brand-100">{a.icon}</span>
+                <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-50 text-lg font-bold text-brand-700">{a.icon}</span>
                 <div>
                   <h2 className="font-semibold">{a.name}</h2>
                   <p className="text-sm muted">{a.tagline}</p>
